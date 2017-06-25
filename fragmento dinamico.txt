@@ -1,5 +1,4 @@
 ----------------------------main----------
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -10,63 +9,90 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        Categorias categorias = new Categorias();
-        fragmentTransaction.add(R.id.contenedor1, categorias);
+        ListaDePlanetas listaDePlanetas = new ListaDePlanetas();
+        fragmentTransaction.add(R.id.lista_de_planetas, listaDePlanetas);
         fragmentTransaction.commit();
+
     }
 
-    public void mostrarEmails(View view){
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    @Override
+    public void onBackPressed() {
+        if(getFragmentManager().getBackStackEntryCount()>0){
+            getFragmentManager().popBackStack();
+        }
+        else{
+        super.onBackPressed();
+        }
+        }
+}
 
-        Email email = new Email();
-        fragmentTransaction.add(R.id.contenedor2, email);
-        fragmentTransaction.commit();
+----------------------------Base de datos-----------------
+
+public class BaseDeDatos {
+
+    String [] planetas = new String[]{"Venus", "Tierra", "Mercurio", "Marte", "Júpiter", "Saturno", "Urano"};
+}
+
+------------------------------Lista de planetas--------------
+public class ListaDePlanetas extends ListFragment{
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        BaseDeDatos baseDeDatos = new BaseDeDatos();
+        ListAdapter listAdapter = new ArrayAdapter<String>(
+                getActivity(), android.R.layout.simple_list_item_1, baseDeDatos.planetas);
+        setListAdapter(listAdapter);
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+
+        Venus venus = new Venus();
+
+        FragmentTransaction fragmentTransaction = getActivity().getFragmentManager().beginTransaction();
+
+        switch (position){
+            case 0:
+                fragmentTransaction.replace(R.id.lista_de_planetas, venus);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle("Lista de Planetas");
     }
 }
 
---------------------------Email----------------------------
+------------------------------Venus----------------------------
 
-public class Email extends Fragment{
+public class Venus extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.email, container, false);
-
-        String [] email = new String[]{"Darth Vader", "Ezio Auditore", "Leonardo Da Vinci", "Papa Francisco", "Larry Page"};
-
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, email);
-        ListView listView = (ListView) view.findViewById(R.id.email);
-        listView.setAdapter(arrayAdapter);
-
+        View view = inflater.inflate(R.layout.venus, container, false);
         return view;
     }
-}
-
------------------------------------Categorias-----------------
-
-public class Categorias extends Fragment {
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.categorias, container, false);
-
-        String [] categorias = new String[]{"Entrantes", "Salientes", "Destacados", "Borradores", "Basura"};
-
-        ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, categorias);
-        ListView listView = (ListView) view.findViewById(R.id.lista_categorias);
-        listView.setAdapter(arrayAdapter);
-
-        return view;
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle("Venus");
     }
 }
 
------------------------------layout main-------------------------
+-----------------------------------layout main---------------
 
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -74,67 +100,53 @@ public class Categorias extends Fragment {
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.adicionandofragmentodinamico.MainActivity"
-    android:orientation="horizontal">
+    tools:context="nextu.com.sustituirfragmentos.MainActivity">
 
     <FrameLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/contenedor1"
-        android:background="@color/fondo_fragmento"
-        android:layout_margin="1sp">
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/lista_de_planetas"></FrameLayout>
 
-    </FrameLayout>
+</RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="2"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/mostrar_mails"
-            android:onClick="mostrarEmails"/>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/contenedor2"
-            android:background="@color/fondo_fragmento"
-            android:layout_margin="1sp">
-
-        </FrameLayout>
-    </LinearLayout>
-
-</LinearLayout>
-
------------------------------------layout email--------------------
+-----------------------------layout lista de planetas-------
 
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/email" />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:id="@+id/contenedor"></FrameLayout>
+</RelativeLayout>
 
--------------------------------layout categoria------------------
-
+-----------------------------layout venus-------------------
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/lista_categorias"
-        android:layout_gravity="center_horizontal" />
-</LinearLayout>
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/venus"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
-----------------------------email-----------------
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/venus"
+        android:id="@+id/textView"
+        android:layout_marginBottom="66dp"
+        android:layout_above="@+id/imageView"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
 
