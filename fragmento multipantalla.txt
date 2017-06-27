@@ -1,118 +1,134 @@
---------------------------main--------------------------------
+-----------------------------main-----------------------------
 public class MainActivity extends AppCompatActivity {
 
-    static boolean dinamica;
+    ViewPager viewPager;
+    DiasNoticias diasNoticias;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        View view = findViewById(R.id.dinamico);
+        viewPager = (ViewPager) findViewById(R.id.paginas);
+        diasNoticias = new DiasNoticias(getSupportFragmentManager());
+        viewPager.setAdapter(diasNoticias);
 
-        if(view == null){
-            dinamica = false;
+    }
+}
+---------------------------Dias noticias--------------------------
+public class DiasNoticias extends FragmentPagerAdapter{
+
+    static final int CANT_PAG = 3;
+
+    public DiasNoticias(FragmentManager fm){
+        super(fm);
+    }
+
+    @Override
+    public Fragment getItem(int position) {
+
+        if(position == 0){
+            return new ProgramacionAyer();
+        }
+        if(position == 1){
+            return new ProgramacionHoy();
         }
         else{
-            Login login = new Login();
-            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-            fragmentTransaction.add(R.id.dinamico, login);
-            fragmentTransaction.commit();
+            return new ProgramacionManana();
         }
+
     }
 
     @Override
-    public void onBackPressed() {
-        FragmentManager fm = getFragmentManager();
-        if (fm.getBackStackEntryCount() > 0) {
-            fm.popBackStack();
-        } else {
-            super.onBackPressed();
-        }
+    public int getCount() {
+        return CANT_PAG;
     }
 }
 
---------------------------------lista---------------------------------
-  @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-
-        String [] listaDeOpciones = getResources().getStringArray(R.array.opciones);
-
-        ListAdapter listAdapter = new ArrayAdapter<String>(
-                getActivity(), android.R.layout.simple_list_item_1, listaDeOpciones);
-        setListAdapter(listAdapter);
-
-    }
+----------------------------programacionayer----------------------
+public class ProgramacionAyer extends Fragment {
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        Login login = new Login();
-        Ayuda ayuda = new Ayuda();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.programacion_ayer, container, false);
 
-        FragmentTransaction fragmentTransaction =
-                getActivity().getFragmentManager().beginTransaction();
-
-        switch (position){
-            case 0:
-                fragmentTransaction.replace(R.id.dinamico, login);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-                break;
-            case 1:
-                fragmentTransaction.replace(R.id.dinamico, ayuda);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getActivity().setTitle("Inicio");
-    }
-}
-
---------------------------------------login------------------------
-public class Login extends Fragment {
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.login, container, false);
+        String [] programacion_ayer = new String[] {"Inter vs. Milan", "Roland Garros"};
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(),
+                android.R.layout.simple_list_item_1, programacion_ayer);
+        ListView listView = (ListView) view.findViewById(R.id.programacion_ayer);
+        listView.setAdapter(arrayAdapter);
         return view;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getActivity().setTitle("Login");
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if(isVisibleToUser){
+            getActivity().setTitle("Programación de Ayer");
+        }
+
     }
 }
+-----------------------------programacion hoy----------------------
+public class ProgramacionHoy extends Fragment {
 
-------------------------------ayuda------------------------------
-
-public class Ayuda extends Fragment {
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.programacion_hoy, container, false);
 
-        View view = inflater.inflate(R.layout.ayuda, container, false);
+        String [] programacion_hoy = new String[] {"Real Madrid vs. Barcelona", "Roland Garros"};
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(),
+                android.R.layout.simple_list_item_1, programacion_hoy);
+        ListView listView = (ListView) view.findViewById(R.id.programacion_hoy);
+        listView.setAdapter(arrayAdapter);
+
+        return view;
+        }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if(isVisibleToUser){
+            getActivity().setTitle("Programación Hoy");
+        }
+
+    }
+}
+----------------------------------------programacion manana------
+
+public class ProgramacionManana extends Fragment {
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.programacion_manana, container, false);
+
+        String [] programacion_manana = new String[] {"Noticias Sports", "Arsenal vs. Chelsea"};
+        ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(),
+                android.R.layout.simple_list_item_1, programacion_manana);
+        ListView listView = (ListView) view.findViewById(R.id.programacion_manana);
+        listView.setAdapter(arrayAdapter);
+
         return view;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getActivity().setTitle("Ayuda");
-    }
-}
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
 
---------------------------------main layout---------------------
+        if(isVisibleToUser){
+            getActivity().setTitle("Programación de Mañana");
+        }
+
+    }
+
+}
+------------------------------layout main--------------------------
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -122,121 +138,48 @@ public class Ayuda extends Fragment {
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="nextu.com.fragmentosdinamicosmultipantalla.MainActivity">
+    tools:context="nextu.com.fragmentosdinamicosswipe.MainActivity">
 
-
-    <FrameLayout
+    <android.support.v4.view.ViewPager
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/dinamico"></FrameLayout>
+        android:id="@+id/paginas"></android.support.v4.view.ViewPager>
 
 </RelativeLayout>
--------------------------------------layout main large-------------
+------------------------------layout programacion ayer-------------
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent" android:layout_height="match_parent">
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true">
-
-        <fragment
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:name="nextu.com.fragmentosdinamicosmultipantalla.Lista"
-            android:id="@+id/fragment"
-            tools:layout="@layout/lista"
-            android:layout_weight="1" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:layout_gravity="center"
-            android:gravity="center">
-
-            <FrameLayout
-                android:layout_width="375dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
-                android:id="@+id/dinamico"></FrameLayout>
-
-        </LinearLayout>
-
-
-    </LinearLayout>
-</RelativeLayout>
-------------------------------------layout ayuda--------------
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <ListView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Ayuda"
-        android:id="@+id/textView"
-        android:layout_gravity="center_horizontal"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-</RelativeLayout>
---------------------------------layout lista----------------------
+        android:id="@+id/programacion_ayer"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>
+-------------------------------layout programacion hoy-----------
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/opciones">
-
-
-
-</FrameLayout>
-------------------------------layout login---------------------
+    android:layout_height="match_parent">
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/programacion_hoy"
+        android:layout_gravity="center_horizontal" />
+</LinearLayout>
+-----------------------------layout programacion manana------------
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    <ImageView
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:id="@+id/imageView"
-        android:src="@drawable/ic_person_24dp"
-        android:layout_gravity="center_horizontal" />
-
-    <EditText
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/editText"
-        android:hint="Usuario"
+        android:id="@+id/programacion_manana"
         android:layout_gravity="center_horizontal" />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:id="@+id/editText2"
-        android:hint="Contraseña"
-        android:layout_gravity="center_horizontal" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Entrar"
-        android:id="@+id/button"
-        android:layout_marginTop="30dp"
-        android:layout_gravity="center_horizontal" />
-    </LinearLayout>
-</RelativeLayout>
+</LinearLayout>
