@@ -1,7 +1,8 @@
------------------------main---------------------------
-import java.util.Random;
+-----------------------------------main-----------------------
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -9,92 +10,393 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
-    public void onClickButton(View v) {
-        //obteniendo un numero aleatorio entre 0 y 4
-        int color = (int) (new Random().nextDouble() * 5);
-        //obteniendo el FragmentTransaction
+    public void onClickBuscar(View view) {
+        Log.i(TAG, "metodo buscar");
+
+        EditText editFruta = (EditText) findViewById(R.id.editBuscar);
+        String nombreFruta = editFruta.getText().toString();
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        //creando el fragmento
-        ColorFragment fragment = ColorFragment.getInstance(color);
-        //reemplazando el fragmento
-        transaction.replace(R.id.managerFragmentLayout, fragment);
-        //realizando el cambio
+        DetailFragment fragment = DetailFragment.getInstance(nombreFruta);
+        transaction.replace(R.id.fragmentLayout, fragment);
         transaction.commit();
     }
 
-}
-
-----------------------------color fragment---------------------
-public class ColorFragment extends Fragment {
-
-    LinearLayout layout;
-
-    TextView textColor;
-
-    public static ColorFragment getInstance(int color) {
-        ColorFragment fragment = new ColorFragment();
-
-        Bundle params = new Bundle();
-        params.putInt("color", color);
-
-        fragment.setArguments(params);
-
-        return fragment;
+    public void onClickAgregar(View view) {
+        Log.i(TAG, "metodo agregar");
+        Intent intent = new Intent(getApplicationContext(), AddFruitActivity.class);
+        startActivity(intent);
     }
 
+}
+----------------------carpeta model clase fruta--------------
+package com.nextuniversity.buscandofrutas.model;
 
-    private void changeColor() {
-        String[] colors = getResources().getStringArray(R.array.colors);
+public class Fruta {
 
-        int color = 0;
+    private int id;
 
-        if (getArguments() == null)
-            return;
-        else
-            color = getArguments().getInt("color");
+    private String nombre;
 
-        Log.i("InfoColor", String.valueOf(color));
+    private String descripcion;
 
-        textColor.setText(colors[color]);
+    public Fruta() {
+    }
 
-        switch (color) {
-            case 0:
-                textColor.setTextColor(getResources().getColor(R.color.darkYellow));
-                layout.setBackgroundColor(getResources().getColor(R.color.ligthYellow));
-                break;
-            case 1:
-                textColor.setTextColor(getResources().getColor(R.color.darkBlue));
-                layout.setBackgroundColor(getResources().getColor(R.color.ligthBlue));
-                break;
-            case 2:
-                textColor.setTextColor(getResources().getColor(R.color.darkRed));
-                layout.setBackgroundColor(getResources().getColor(R.color.ligthRed));
-                break;
-            case 3:
-                textColor.setTextColor(getResources().getColor(R.color.darkGreen));
-                layout.setBackgroundColor(getResources().getColor(R.color.ligthGreen));
-                break;
-            case 4:
-                textColor.setTextColor(getResources().getColor(R.color.darkFuchsia));
-                layout.setBackgroundColor(getResources().getColor(R.color.ligthFuchsia));
-                break;
+    public Fruta(int id, String nombre, String descripcion, float precio) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.precio = precio;
+    }
+
+    private float precio;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public float getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(float precio) {
+        this.precio = precio;
+    }
+}
+----------------------carpeta service clase servicio----------
+package com.nextuniversity.buscandofrutas.service;
+
+import java.util.List;
+
+public interface Servicio<T, K> {
+
+    void agregar(T t);
+
+    List<T> obtenerTodos();
+
+    T obtener(K k);
+
+}
+---------------------carpeta service clase servicio de frutas-----
+public class ServicioDeFrutas implements Servicio<Fruta, String> {
+
+    private static ServicioDeFrutas instance;
+
+    private List<Fruta> frutas;
+
+    private ServicioDeFrutas() {
+        this.frutas = new ArrayList<>();
+
+        this.frutas.add(new Fruta(
+                1,
+                "Manzana",
+                "La manzana es una fruta pomácea comestible, fruto del manzano doméstico " +
+                        "(Malus domestica), otros manzanos (especies del género Malus) o híbridos " +
+                        "de aquel. En algunas zonas de España se le suele llamar pero cuando " +
+                        "tiene forma alargada,1 aunque en muchas partes de Andalucía se llama " +
+                        "indistintamente “pero” a la manzana.",
+                3f));
+
+        this.frutas.add(new Fruta(
+                2,
+                "Pera",
+                "Se denomina pera al fruto de distintas especies del género Pyrus, integrado " +
+                        "por árboles caducifolios conocidos comúnmente como perales.1 Sin " +
+                        "embargo, cuando se trata del fruto comestible, se hace referencia " +
+                        "mayormente al producido por el llamado peral común (Pyrus communis). " +
+                        "La pera es una fruta jugosa, carnosa, y una de las más importantes " +
+                        "producidas en las regiones templadas.",
+                4f));
+
+        this.frutas.add(new Fruta(
+                3,
+                "Naranja",
+                "La naranja es una fruta cítrica comestible obtenida del naranjo dulce (Citrus ×" +
+                        " sinensis), del naranjo amargo (Citrus × aurantium) y de naranjos de " +
+                        "otras variedades o híbridos, antiguos híbridos asiáticos originarios " +
+                        "de India, Vietnam o el sureste de China.",
+                3f));
+
+        this.frutas.add(new Fruta(
+                4,
+                "Fresa",
+                "Fragaria, llamado comúnmente fresa o frutilla, es un género de plantas rastreras " +
+                        "estoloniferas de la familia Rosaceae. Agrupa unos 400 taxones descritos, " +
+                        "de los cuales solo unos 20 están aceptados.",
+                3f));
+    }
+
+    public static ServicioDeFrutas getInstance() {
+        if (instance == null)
+            instance = new ServicioDeFrutas();
+        return instance;
+    }
+
+    @Override
+    public void agregar(Fruta fruta) {
+        this.frutas.add(fruta);
+    }
+
+    @Override
+    public List<Fruta> obtenerTodos() {
+        return frutas;
+    }
+
+    @Override
+    public Fruta obtener(String name) {
+        if (name == null || "".equals(name))
+            return null;
+
+        for (Fruta temp : frutas) {
+            if (temp.getNombre().equals(name))
+                return temp;
         }
+
+        return null;
+    }
+}
+---------------------add fruit de frutas--------------------
+public class AddFruitActivity extends AppCompatActivity {
+
+    Servicio servicio = ServicioDeFrutas.getInstance();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add_fruit);
+    }
+
+    public void onClickGuardar(View view) {
+        EditText editNombre = (EditText) findViewById(R.id.editNombre);
+        EditText editDescripcion = (EditText) findViewById(R.id.editDescripcion);
+        EditText editPrecio = (EditText) findViewById(R.id.editPrecio);
+
+        String nombre = editNombre.getText().toString();
+        String descripcion = editDescripcion.getText().toString();
+        float precio = Float.parseFloat(editPrecio.getText().toString());
+
+        servicio.agregar(new Fruta(0, nombre, descripcion, precio));
+        Toast.makeText(this, "Se guardo la fruta", Toast.LENGTH_SHORT).show();
+
+        onBackPressed();
+    }
+
+}
+----------------------Detail fragment--------------------------
+public class DetailFragment extends Fragment {
+
+    private static final String TAG = DetailFragment.class.getSimpleName();
+
+    Servicio servicio = ServicioDeFrutas.getInstance();
+
+    TextView textNombre;
+
+    TextView textDescripcion;
+
+    TextView textPrecio;
+
+    public static DetailFragment getInstance(String nombreFruta) {
+        DetailFragment fragment = new DetailFragment();
+
+        Bundle params = new Bundle();
+        params.putString("nombre", nombreFruta);
+
+        fragment.setArguments(params);
+        return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_color, container, false);
+        View view = inflater.inflate(R.layout.fragment_detail, container, false);
+
+        textNombre = (TextView) view.findViewById(R.id.textTitulo);
+        textDescripcion = (TextView) view.findViewById(R.id.textDescripcion);
+        textPrecio = (TextView) view.findViewById(R.id.textPrecio);
+
+        actualizarCampos();
+
+        return view;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    private void actualizarCampos() {
+        if (getArguments() == null)
+            return;
 
-        layout = (LinearLayout) getView().findViewById(R.id.backLayout);
-        textColor = (TextView) getView().findViewById(R.id.textColor);
+        String nombre = getArguments().getString("nombre");
+        Fruta fruta = (Fruta) servicio.obtener(nombre);
 
-        changeColor();
+        if (fruta != null) {
+            textNombre.setText(fruta.getNombre());
+            textDescripcion.setText(fruta.getDescripcion());
+
+            NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
+            String precio = format.format(fruta.getPrecio());
+            Log.w(TAG, precio);
+            textPrecio.setText(precio);
+        } else {
+            Toast.makeText(getContext(), "No se encontraron frutas con ese nombre.", Toast.LENGTH_SHORT).show();
+        }
     }
+
 }
+-------------------------layout add fruit--------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextuniversity.buscandofrutas.AddFruitActivity">
 
+    <TextView
+        android:text="@string/text_nombre"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/editNombre"
+        android:inputType="text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <TextView
+        android:text="@string/text_descripcion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/editDescripcion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="@string/text_precio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/editPrecio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:text="@string/btn_guardar"
+        android:onClick="onClickGuardar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
+-------------------------layout main---------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextuniversity.buscandofrutas.MainActivity">
+
+    <Button
+        android:text="@string/button_add"
+        android:onClick="onClickAgregar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/editBuscar"
+            android:layout_weight="3"
+            android:hint="@string/hint_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="@string/button_search"
+            android:layout_weight="1.5"
+            android:onClick="onClickBuscar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fragmentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/fragmentDetailt"
+            android:name="com.nextuniversity.buscandofrutas.DetailFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_detail" />
+
+    </FrameLayout>
+
+</LinearLayout>
+---------------------layout fragmento detail----------------
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nextuniversity.buscandofrutas.DetailFragment">
+
+    <TextView
+        android:id="@+id/textTitulo"
+        android:textSize="32dp"
+        android:layout_marginBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textDescripcion"
+        android:layout_marginBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textPrecio"
+        android:textColor="@color/colorPrimary"
+        android:textSize="24dp"
+        android:gravity="end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
