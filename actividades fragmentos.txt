@@ -1,5 +1,4 @@
---------------------------------Main--------------------
-
+--------------------------------main------------------------
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -7,24 +6,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-
-    public void onClickEnviarMensaje(View view) {
-        EditText editMensaje = (EditText) findViewById(R.id.edit_mensaje);
-        String mensaje = editMensaje != null ? editMensaje.getText().toString() : "No hay mensaje";
-
-        Fragment fragmento = getSupportFragmentManager().findFragmentByTag("tagFragmentoMensaje");
-        if (fragmento instanceof MensajeFragment) {
-            MensajeFragment mensajeFragmento = (MensajeFragment) fragmento;
-            mensajeFragmento.getTxtMensaje().setText(mensaje);
-        }
-    }
-
 }
-
----------------------------------Mensaje fragment---------------
+--------------------------mensaje fragment------------------------
 public class MensajeFragment extends Fragment {
-
-    private TextView txtMensaje;
 
     @Nullable
     @Override
@@ -37,14 +21,27 @@ public class MensajeFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        this.txtMensaje = (TextView) view.findViewById(R.id.txt_mensaje);
+        Button button = (Button) view.findViewById(R.id.btn_obtener);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getMensajeDeActividad();
+            }
+        });
+    }
+    
+    public void getMensajeDeActividad() {
+        EditText editMensaje = (EditText) getActivity().findViewById(R.id.edit_mensaje);
+        String mensaje = editMensaje != null ? editMensaje.getText().toString() : "No hay mensaje";
+
+        if (getView() != null) {
+            TextView txtMensaje = (TextView) getView().findViewById(R.id.txt_mensaje);
+            txtMensaje.setText(mensaje);
+        }
     }
 
-    public TextView getTxtMensaje() {
-        return txtMensaje;
-    }
 }
----------------------------layout main-------------------------
+-------------------------------layuot main--------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -58,38 +55,44 @@ public class MensajeFragment extends Fragment {
     tools:context="com.nextuniversity.comunicacion.MainActivity">
 
     <TextView
+        android:text="@string/mensaje"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/mensaje" />
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/edit_mensaje"
+        android:hint="@string/hint_mensaje"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:onClick="onClickEnviarMensaje"
-        android:text="@string/btn_mensaje"/>
+        android:layout_height="wrap_content" />
 
     <fragment
         android:id="@+id/fragment_mensaje"
-        android:tag="tagFragmentoMensaje"
         android:name="com.nextuniversity.comunicacion.MensajeFragment"
-        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         tools:layout="@layout/fragment_mensaje" />
 
 </LinearLayout>
-
-----------------------------------layout fragment_mensaje--------
+------------------------------layout fragment-------------------
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/txt_mensaje"
-    android:padding="8dp"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btn_obtener"
+        android:text="@string/btn_obtener"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/txt_mensaje"
+        android:textStyle="italic"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
