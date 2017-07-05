@@ -1,0 +1,95 @@
+--------------------------------Main--------------------
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+    public void onClickEnviarMensaje(View view) {
+        EditText editMensaje = (EditText) findViewById(R.id.edit_mensaje);
+        String mensaje = editMensaje != null ? editMensaje.getText().toString() : "No hay mensaje";
+
+        Fragment fragmento = getSupportFragmentManager().findFragmentByTag("tagFragmentoMensaje");
+        if (fragmento instanceof MensajeFragment) {
+            MensajeFragment mensajeFragmento = (MensajeFragment) fragmento;
+            mensajeFragmento.getTxtMensaje().setText(mensaje);
+        }
+    }
+
+}
+
+---------------------------------Mensaje fragment---------------
+public class MensajeFragment extends Fragment {
+
+    private TextView txtMensaje;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_mensaje, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        this.txtMensaje = (TextView) view.findViewById(R.id.txt_mensaje);
+    }
+
+    public TextView getTxtMensaje() {
+        return txtMensaje;
+    }
+}
+---------------------------layout main-------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextuniversity.comunicacion.MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/mensaje" />
+
+    <EditText
+        android:id="@+id/edit_mensaje"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:onClick="onClickEnviarMensaje"
+        android:text="@string/btn_mensaje"/>
+
+    <fragment
+        android:id="@+id/fragment_mensaje"
+        android:tag="tagFragmentoMensaje"
+        android:name="com.nextuniversity.comunicacion.MensajeFragment"
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragment_mensaje" />
+
+</LinearLayout>
+
+----------------------------------layout fragment_mensaje--------
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/txt_mensaje"
+    android:padding="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>
