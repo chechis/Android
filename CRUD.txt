@@ -1,0 +1,592 @@
+---------------------------main------------------------
+public class MainActivity extends AppCompatActivity implements ListaNotasFragment.INotaSeleccionada {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.fragment_lista_nota) == null)
+            getSupportFragmentManager().beginTransaction()
+            .add(R.id.contenedor, new ListaNotasFragment())
+            .commit();
+    }
+
+    @Override
+    public void notaSeleccionada(int posicion) {
+        NotaDetalleFragment fragment = (NotaDetalleFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_nota_detalle);
+
+        if (fragment != null) {
+            fragment.actualizarVista(posicion);
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.contenedor, NotaDetalleFragment.getInstance(posicion))
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    public void clicAgregar() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.contenedor, new NotaDetalleFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+}
+---------------------carpeta adaptador listNotaAdapter-------
+public class ListaNotasFragment extends Fragment implements AdapterView.OnItemClickListener {
+
+    ListView listNotas;
+
+    Button btnAgregar;
+
+    private INotaSeleccionada implementacion;
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        implementacion.notaSeleccionada(position);
+    }
+
+    public interface INotaSeleccionada {
+        void notaSeleccionada(int posicion);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            implementacion = (INotaSeleccionada) context;
+        } catch (ClassCastException ex) {
+            throw new ClassCastException(context.toString()
+                    + " debe implementar la interfaz INotaSeleccionada");
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_lista_notas, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        listNotas = (ListView) view.findViewById(R.id.list_notas);
+        actualizarAdapter();
+        listNotas.setOnItemClickListener(this);
+
+        this.btnAgregar = (Button) view.findViewById(R.id.btn_agregar);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        final MainActivity activity = (MainActivity) getActivity();
+        btnAgregar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.clicAgregar();
+            }
+        });
+    }
+
+    public void actualizarAdapter() {
+        ListNotaAdapter adapter =
+                new ListNotaAdapter(getContext(), ServicioNota.getInstance().listar());
+        this.listNotas.setAdapter(adapter);
+    }
+}
+---------------------------------carpeta modelo nota---------------
+package com.nextuniversity.notas.modelo;
+
+import java.util.Calendar;
+
+public class Nota {
+
+    private Integer identificador;
+
+    private String titulo;
+
+    private String descripcion;
+
+    private Calendar fechaModificacion;
+
+    public Nota() {
+        this.fechaModificacion = Calendar.getInstance();
+    }
+
+    public Nota(String titulo, String descripcion) {
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.fechaModificacion = Calendar.getInstance();
+    }
+
+    public Integer getIdentificador() {
+        return identificador;
+    }
+
+    public void setIdentificador(Integer identificador) {
+        this.identificador = identificador;
+        this.fechaModificacion = Calendar.getInstance();
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+        this.fechaModificacion = Calendar.getInstance();
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+        this.fechaModificacion = Calendar.getInstance();
+    }
+
+    public Calendar getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Calendar fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+}
+------------------------carpeta servicio servicioNota-----------
+package com.nextuniversity.notas.servicio;
+
+import com.nextuniversity.notas.modelo.Nota;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ServicioNota {
+
+    private List<Nota> notas;
+
+    private ServicioNota() {
+        this.notas = new ArrayList<>();
+
+        this.agregar(new Nota("Primera nota", "Descripción de la primera nota"));
+        this.agregar(new Nota("Segunda nota", "Descripción de la segunda nota"));
+    }
+
+    private static final ServicioNota INSTANCE = new ServicioNota();
+
+    public static ServicioNota getInstance() {
+        return INSTANCE;
+    }
+
+    public Nota agregar(Nota nota) {
+        nota.setIdentificador(notas.size() + 1);
+        notas.add(nota);
+        return nota;
+    }
+
+    public Nota modificar(Nota nota) {
+        if (nota.getIdentificador() == null)
+            return null;
+
+        int posicion = nota.getIdentificador() - 1;
+        notas.set(posicion, nota);
+        return nota;
+    }
+
+    public Nota eliminar(Integer identificacion) {
+        if (identificacion == null)
+            return null;
+
+        return notas.remove(identificacion - 1);
+    }
+
+    public List<Nota> listar() {
+        return notas;
+    }
+
+    public Nota obtenerNota(Integer posicion) {
+        if (posicion != null)
+            return notas.get(posicion);
+        return null;
+    }
+
+}
+-----------------------lista notas fragment----------------
+package com.nextuniversity.notas.adaptador;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+
+import com.nextuniversity.notas.R;
+import com.nextuniversity.notas.modelo.Nota;
+
+import java.text.DateFormat;
+import java.util.List;
+
+public class ListNotaAdapter extends BaseAdapter {
+
+    private Context context;
+
+    private List<Nota> notas;
+
+    public ListNotaAdapter(Context context, List<Nota> notas) {
+        this.context = context;
+        this.notas = notas;
+    }
+
+    @Override
+    public int getCount() {
+        return notas.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return notas.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return notas.get(position).getIdentificador();
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View view = convertView;
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater)
+                    context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = inflater.inflate(R.layout.list_item_nota, null);
+        }
+
+        Nota nota = notas.get(position);
+
+        ((TextView) view.findViewById(R.id.text_titulo)).setText(nota.getTitulo());
+        ((TextView) view.findViewById(R.id.text_descripcion)).setText(nota.getDescripcion());
+
+        DateFormat dateFormat = DateFormat.getDateInstance();
+        String modificacion = dateFormat.format(nota.getFechaModificacion().getTime());
+
+        ((TextView) view.findViewById(R.id.text_modificacion)).setText(modificacion);
+
+        return view;
+    }
+}
+---------------------------nota dealle fragment-------------------
+public class NotaDetalleFragment extends Fragment {
+
+    EditText editTitulo;
+    EditText editDescripcion;
+
+    TextView textId;
+    TextView textFechaModificacion;
+
+    Button btnGuardar;
+    Button btnEliminar;
+
+    private int posicionActual = -1;
+
+    private static final String LLAVE_POSICION = "posicion";
+
+    public static NotaDetalleFragment getInstance(int posicion) {
+        NotaDetalleFragment fragment = new NotaDetalleFragment();
+
+        Bundle argumentos = new Bundle();
+        argumentos.putInt(LLAVE_POSICION, posicion);
+
+        fragment.setArguments(argumentos);
+        return fragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        if (savedInstanceState != null)
+            this.posicionActual = savedInstanceState.getInt(LLAVE_POSICION);
+
+        return inflater.inflate(R.layout.fragment_nota_detalle, container, false);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(LLAVE_POSICION, posicionActual);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        editTitulo = (EditText) view.findViewById(R.id.edit_titulo);
+        editDescripcion = (EditText) view.findViewById(R.id.edit_descripcion);
+
+        textId = (TextView) view.findViewById(R.id.text_id);
+        textFechaModificacion = (TextView) view.findViewById(R.id.text_modificacion);
+
+        btnGuardar = (Button) view.findViewById(R.id.btn_guardar);
+        btnGuardar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clicGuardar();
+            }
+        });
+
+        btnEliminar = (Button) view.findViewById(R.id.btn_eliminar);
+        btnEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clicEliminar();
+            }
+        });
+    }
+
+    private void clicEliminar() {
+        if (posicionActual != -1) {
+            ServicioNota.getInstance().eliminar(posicionActual + 1);
+
+            getActivity().onBackPressed();
+        }
+    }
+
+    private void clicGuardar() {
+        ServicioNota servicioNota = ServicioNota.getInstance();
+
+        String titulo = editTitulo.getText().toString();
+        String descripcion = editDescripcion.getText().toString();
+
+        if (posicionActual != -1) {
+            Nota nota = servicioNota.obtenerNota(posicionActual);
+            nota.setTitulo(titulo);
+            nota.setDescripcion(descripcion);
+            servicioNota.modificar(nota);
+        } else {
+            Nota nuevaNota = new Nota(titulo, descripcion);
+            servicioNota.agregar(nuevaNota);
+        }
+
+        getActivity().onBackPressed();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Bundle argumentos = getArguments();
+        if (argumentos != null) {
+            actualizarVista(argumentos.getInt(LLAVE_POSICION));
+        } else if (posicionActual != -1) {
+            actualizarVista(posicionActual);
+        }
+    }
+
+    public void actualizarVista(int posicion) {
+        if (posicion != -1) {
+            Nota nota = ServicioNota.getInstance().obtenerNota(posicion);
+
+            editTitulo.setText(nota.getTitulo());
+            editDescripcion.setText(nota.getDescripcion());
+
+            textId.setText("Identificador: " + nota.getIdentificador());
+
+            DateFormat dateFormat = DateFormat.getDateTimeInstance();
+            String modificacion = dateFormat.format(nota.getFechaModificacion().getTime());
+
+            textFechaModificacion.setText(modificacion);
+        }
+        posicionActual = posicion;
+    }
+}
+---------------------layout main celular----------------------
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nextuniversity.notas.MainActivity" />
+--------------------layout main tablet----------------------------
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false">
+
+    <fragment
+        android:id="@+id/fragment_lista_nota"
+        android:name="com.nextuniversity.notas.ListaNotasFragment"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_lista_notas" />
+
+    <fragment
+        android:id="@+id/fragment_nota_detalle"
+        android:name="com.nextuniversity.notas.NotaDetalleFragment"
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_nota_detalle" />
+
+</LinearLayout>
+
+-----------------------layout fragment lista notas-------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ListView
+        android:id="@+id/list_notas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btn_agregar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAccent"
+        android:text="@string/agregar_nota"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>
+------------------------layout fragment nota detalle--------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/text_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:padding="@dimen/activity_vertical_margin"
+        android:text="@string/identificacion" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
+    <EditText
+        android:id="@+id/edit_titulo"
+        style="@style/FullWidthEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/titulo" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
+    <EditText
+        android:id="@+id/edit_descripcion"
+        style="@style/FullWidthEditText"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="top"
+        android:hint="@string/descripcion" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp"
+        android:paddingLeft="@dimen/activity_vertical_margin"
+        android:paddingRight="@dimen/activity_vertical_margin">
+
+        <TextView
+            android:id="@+id/text_modificacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btn_guardar"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/guardar" />
+
+        <Button
+            android:id="@+id/btn_eliminar"
+            android:theme="@style/MyDeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Eliminar" />
+
+    </LinearLayout>
+
+</LinearLayout>
+
+------------------------layout list item nota---------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/activity_vertical_margin">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_titulo"
+            android:textColor="@android:color/black"
+            android:alpha=".84"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medium Text"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/text_descripcion"
+            android:text="Small Text"
+            android:textColor="@android:color/black"
+            android:alpha=".54"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_modificacion"
+        android:text="00"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorModificacion"
+        android:textSize="12sp" />
+
+</LinearLayout>
