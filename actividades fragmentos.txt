@@ -1,156 +1,250 @@
---------------------------------main-------------------------
-
-public class MainActivity extends AppCompatActivity implements FragmentoEmisor.IEnviarMensaje {
-
-    private static final String TAG = MainActivity.class.getSimpleName();
+-------------------------------------main-------------------------
+public class MainActivity extends AppCompatActivity
+        implements ListaCertificadosFragment.ICertificadoSeleccionado {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.contenedor) != null) {
+            if (savedInstanceState != null)
+                return;
+
+            ListaCertificadosFragment fragment = new ListaCertificadosFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.contenedor, fragment)
+                    .commit();
+        }
     }
 
     @Override
-    public void enviarMensaje(String mensaje) {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmento_receptor);
-        if (fragment instanceof FragmentoReceptor) {
-            FragmentoReceptor fragmentoReceptor = (FragmentoReceptor) fragment;
-            fragmentoReceptor.actualizarVista(mensaje);
+    public void certificadoSeleccionado(int posicion) {
+        CertificadoFragment fragment = (CertificadoFragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_detalle);
+        if (fragment != null) {
+            fragment.actualizarVista(posicion);
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.contenedor, CertificadoFragment.getInstance(posicion))
+                    .addToBackStack(null)
+                    .commit();
         }
     }
 }
------------------------------fragmento receptor-------------
-public class FragmentoReceptor extends Fragment {
+--------------------------certificado fragment-------------------
+public class CertificadoFragment extends Fragment {
 
-    private TextView textMensaje;
+    private static final String LLAVE_POSICION = "posicion";
+
+    private int posicionActual = -1;
+
+    public static CertificadoFragment getInstance(int posicion) {
+        CertificadoFragment fragment = new CertificadoFragment();
+
+        Bundle argumentos = new Bundle();
+        argumentos.putInt(LLAVE_POSICION, posicion);
+
+        fragment.setArguments(argumentos);
+        return fragment;
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragmento_receptor, container, false);
+
+        if (savedInstanceState != null)
+            posicionActual = savedInstanceState.getInt(LLAVE_POSICION);
+
+        return inflater.inflate(R.layout.fragment_certificado, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        this.textMensaje = (TextView) view.findViewById(R.id.text_mensaje);
+    public void onStart() {
+        super.onStart();
+
+        Bundle argumentos = getArguments();
+        if (argumentos != null)
+            actualizarVista(argumentos.getInt(LLAVE_POSICION));
+        else if (posicionActual != -1)
+            actualizarVista(posicionActual);
     }
 
-    public void actualizarVista(String mensaje) {
-        this.textMensaje.setText(mensaje);
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(LLAVE_POSICION, posicionActual);
+    }
+
+    public void actualizarVista(int posicion) {
+        String[] certificados = getResources().getStringArray(R.array.certificados);
+        String[] descripciones = getResources().getStringArray(R.array.descripciones);
+
+        TextView textNombre = (TextView) getActivity().findViewById(R.id.text_nombre);
+        textNombre.setText(certificados[posicion]);
+
+        ((TextView) getActivity().findViewById(R.id.text_descripcion)).setText(descripciones[posicion]);
+
+        if (posicion != 1)
+            textNombre.setTextColor(ContextCompat.getColor(getContext(), android.R.color.white));
+
+        int color = ContextCompat.getColor(getContext(), android.R.color.transparent);
+        Drawable iconCertificado = null;
+        switch (posicion) {
+            case 0:
+                color = ContextCompat.getColor(getContext(), R.color.colorAndroid);
+                iconCertificado = ContextCompat.getDrawable(getContext(), R.drawable.android);
+                break;
+            case 1:
+                color = ContextCompat.getColor(getContext(), R.color.colorIOs);
+                iconCertificado = ContextCompat.getDrawable(getContext(), R.drawable.ios);
+                break;
+            case 2:
+                color = ContextCompat.getColor(getContext(), R.color.colorWeb);
+                iconCertificado = ContextCompat.getDrawable(getContext(), R.drawable.web);
+                break;
+            case 3:
+                color = ContextCompat.getColor(getContext(), R.color.colorJavascript);
+                iconCertificado = ContextCompat.getDrawable(getContext(), R.drawable.javascript);
+                break;
+        }
+
+        ((ImageView) getActivity().findViewById(R.id.img_certificado)).setImageDrawable(iconCertificado);
+        getActivity().findViewById(R.id.encabezado).setBackgroundColor(color);
     }
 }
------------------------------layout main---------------------------
+--------------------------------lista certificado fragment------
+public class ListaCertificadosFragment extends ListFragment {
+
+    private ICertificadoSeleccionado implementacion;
+
+    public interface ICertificadoSeleccionado {
+        void certificadoSeleccionado(int posicion);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            implementacion = (ICertificadoSeleccionado) context;
+        } catch (ClassCastException ex) {
+            throw new ClassCastException(context.toString()
+            + " debe implementar ICertificadoSeleccionado.");
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        String[] certificados = getResources().getStringArray(R.array.certificados);
+        setListAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, certificados));
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int posicion, long id) {
+        implementacion.certificadoSeleccionado(posicion);
+        getListView().setItemChecked(posicion, true);
+    }
+}
+------------------------------layout fragment certificado--------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextuniversity.comunicacion.MainActivity">
+    android:orientation="vertical">
 
-    <fragment
-        android:id="@+id/fragmento_emisor"
-        android:name="com.nextuniversity.comunicacion.FragmentoEmisor"
+    <LinearLayout
+        android:id="@+id/encabezado"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        tools:layout="@layout/fragmento_emisor" />
+        android:background="@color/colorAndroid"
+        android:paddingTop="50dp"
+        android:orientation="vertical">
 
-    <fragment
-        android:id="@+id/fragmento_receptor"
-        android:name="com.nextuniversity.comunicacion.FragmentoReceptor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout="@layout/fragmento_receptor" />
+        <ImageView
+            android:id="@+id/img_certificado"
+            android:src="@drawable/android"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:contentDescription="@string/app_name" />
 
-</LinearLayout>
---------------------------layout fragmento emisor------------------------
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorBgFragmentA"
-    android:orientation="vertical"
-    android:padding="@dimen/activity_vertical_margin">
+        <TextView
+            android:text="@string/certificacion_android"
+            android:id="@+id/text_nombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <TextView
+        android:text="@string/descripcion_android"
+        android:id="@+id/text_descripcion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/fragmento_emisor"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/fragmento_emisor_xml" />
+        android:padding="@dimen/activity_vertical_margin" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_vertical_margin">
 
-        <EditText
-            android:id="@+id/edit_mensaje"
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/nextu" />
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_mensaje" />
-
-        <Button
-            android:id="@+id/btn_enviar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:text="@string/enviar" />
+            android:gravity="center"
+            android:text="@string/link_nextu"
+            android:textColor="@color/colorAccent" />
 
     </LinearLayout>
 
 </LinearLayout>
---------------------------------layout fragmento receptor----------
+---------------------------layout main celular-----------
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contenedor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgFragmentB"
-    android:orientation="vertical"
-    android:padding="@dimen/activity_vertical_margin">
+    tools:context="com.nextuniversity.certificadosdenextuniversity.MainActivity"/>
+---------------------------------layout main tablet----------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/fragmento_receptor"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+    <fragment
+        android:id="@+id/fragment_lista"
+        android:name="com.nextuniversity.certificadosdenextuniversity.ListaCertificadosFragment"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        tools:layout="@android:layout/list_content" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/fragmento_receptor_xml" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/mensaje_recibido" />
-
-    <TextView
-        android:id="@+id/text_mensaje"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/app_name"
-        android:textSize="16sp"
-        android:textStyle="italic" />
+    <fragment
+        android:id="@+id/fragment_detalle"
+        android:name="com.nextuniversity.certificadosdenextuniversity.CertificadoFragment"
+        android:layout_weight="2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_certificado" />
 
 </LinearLayout>
