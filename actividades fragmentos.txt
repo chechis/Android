@@ -1,97 +1,184 @@
---------------------------------main------------------------
+--------------------------------main-------------------------
 public class MainActivity extends AppCompatActivity {
+
+    private int actualPage = 1;
+
+    private static final int MAX_NUMBER_PAGES = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
-}
---------------------------mensaje fragment------------------------
-public class MensajeFragment extends Fragment {
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_mensaje, container, false);
+        cambiarPagina(actualPage);
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void cambiarPagina(int page) {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.libroFragment);
 
-        Button button = (Button) view.findViewById(R.id.btn_obtener);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getMensajeDeActividad();
-            }
-        });
+        if (fragment != null && fragment.getView() != null) {
+            TextView textPagina = (TextView) fragment.getView().findViewById(R.id.textPagina);
+            TextView textNumberoPagina= (TextView) fragment.getView().findViewById(R.id.textNumberoDePagina);
+
+            String formatoNumeroPagina = String.format("Página %d", page);
+            String[] paginas = getResources().getStringArray(R.array.paginas);
+
+            textNumberoPagina.setText(formatoNumeroPagina);
+            textPagina.setText(paginas[page - 1]);
+        } else {
+            Log.i(MainActivity.class.getSimpleName(), "el fragmento o la vista es nula");
+        }
+
+        Log.i(MainActivity.class.getSimpleName(), "entro en el metodo.");
     }
-    
-    public void getMensajeDeActividad() {
-        EditText editMensaje = (EditText) getActivity().findViewById(R.id.edit_mensaje);
-        String mensaje = editMensaje != null ? editMensaje.getText().toString() : "No hay mensaje";
 
-        if (getView() != null) {
-            TextView txtMensaje = (TextView) getView().findViewById(R.id.txt_mensaje);
-            txtMensaje.setText(mensaje);
+    public void onClickAdelanteButton(View view) {
+        if (actualPage < MAX_NUMBER_PAGES) {
+            cambiarPagina(++actualPage);
+            cambiarEstadoDelEditText();
+        } else {
+            Snackbar.make(view, "No hay más páginas.", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    private void cambiarEstadoDelEditText() {
+        EditText editText = (EditText) findViewById(R.id.editBuscar);
+        if (editText != null)
+            editText.setText(String.valueOf(actualPage));
+    }
+
+    public void onClickAtrasButton(View view) {
+        if (actualPage > 1) {
+            cambiarPagina(--actualPage);
+            cambiarEstadoDelEditText();
+        } else {
+            Snackbar.make(view, "No puedes retroceder más", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    public void onClickIrButton(View view) {
+        EditText editText = (EditText) findViewById(R.id.editBuscar);
+        int page = 1;
+        if (editText != null)
+            page = Integer.parseInt(editText.getText().toString());
+
+        if (page > 1 && page < 3) {
+            actualPage = page;
+            cambiarPagina(actualPage);
+        } else {
+            Snackbar.make(view, "No existe esa página.", Snackbar.LENGTH_LONG).show();
         }
     }
 
 }
--------------------------------layuot main--------------------
+---------------------------------book fragment-----------------
+public class BookFragment extends Fragment {
+
+    public static BookFragment getInstance(int page) {
+        BookFragment bookFragment = new BookFragment();
+
+        Bundle params = new Bundle();
+        params.putInt("page", page);
+
+        bookFragment.setArguments(params);
+        return bookFragment;
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_book, container);
+    }
+
+}
+---------------------------------layout main-------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextuniversity.comunicacion.MainActivity">
+    android:orientation="vertical"
+    tools:context="com.nextuniversity.milibro.MainActivity">
 
-    <TextView
-        android:text="@string/mensaje"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/edit_mensaje"
-        android:hint="@string/hint_mensaje"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <Button
+            android:text="@string/btn_atras"
+            android:onClick="onClickAtrasButton"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
 
-    <fragment
-        android:id="@+id/fragment_mensaje"
-        android:name="com.nextuniversity.comunicacion.MensajeFragment"
+        <EditText
+            android:id="@+id/editBuscar"
+            android:text="1"
+            android:gravity="center"
+            android:inputType="number"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:onClick="onClickIrButton"
+            android:text="@string/btn_ir"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="@string/btn_adelante"
+            android:onClick="onClickAdelanteButton"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:elevation="6dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout="@layout/fragment_mensaje" />
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/libroFragment"
+            android:name="com.nextuniversity.milibro.BookFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_book" />
+
+    </RelativeLayout>
 
 </LinearLayout>
-------------------------------layout fragment-------------------
+--------------------------------layout fragment--------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:gravity="bottom"
+    android:background="@android:color/white"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn_obtener"
-        android:text="@string/btn_obtener"
+    <TextView
+        android:id="@+id/textPagina"
+        android:text="Hello World!"
+        android:padding="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
     <TextView
-        android:id="@+id/txt_mensaje"
-        android:textStyle="italic"
-        android:gravity="center"
-        android:layout_marginTop="16dp"
-        android:textSize="16sp"
+        android:id="@+id/textNumberoDePagina"
+        android:padding="10dp"
+        android:gravity="end"
+        android:text="@string/text_page_number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
