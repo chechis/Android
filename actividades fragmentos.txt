@@ -1,185 +1,156 @@
 --------------------------------main-------------------------
-public class MainActivity extends AppCompatActivity {
 
-    private int actualPage = 1;
+public class MainActivity extends AppCompatActivity implements FragmentoEmisor.IEnviarMensaje {
 
-    private static final int MAX_NUMBER_PAGES = 3;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        cambiarPagina(actualPage);
     }
 
-    private void cambiarPagina(int page) {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.libroFragment);
-
-        if (fragment != null && fragment.getView() != null) {
-            TextView textPagina = (TextView) fragment.getView().findViewById(R.id.textPagina);
-            TextView textNumberoPagina= (TextView) fragment.getView().findViewById(R.id.textNumberoDePagina);
-
-            String formatoNumeroPagina = String.format("Página %d", page);
-            String[] paginas = getResources().getStringArray(R.array.paginas);
-
-            textNumberoPagina.setText(formatoNumeroPagina);
-            textPagina.setText(paginas[page - 1]);
-        } else {
-            Log.i(MainActivity.class.getSimpleName(), "el fragmento o la vista es nula");
-        }
-
-        Log.i(MainActivity.class.getSimpleName(), "entro en el metodo.");
-    }
-
-    public void onClickAdelanteButton(View view) {
-        if (actualPage < MAX_NUMBER_PAGES) {
-            cambiarPagina(++actualPage);
-            cambiarEstadoDelEditText();
-        } else {
-            Snackbar.make(view, "No hay más páginas.", Snackbar.LENGTH_LONG).show();
+    @Override
+    public void enviarMensaje(String mensaje) {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmento_receptor);
+        if (fragment instanceof FragmentoReceptor) {
+            FragmentoReceptor fragmentoReceptor = (FragmentoReceptor) fragment;
+            fragmentoReceptor.actualizarVista(mensaje);
         }
     }
-
-    private void cambiarEstadoDelEditText() {
-        EditText editText = (EditText) findViewById(R.id.editBuscar);
-        if (editText != null)
-            editText.setText(String.valueOf(actualPage));
-    }
-
-    public void onClickAtrasButton(View view) {
-        if (actualPage > 1) {
-            cambiarPagina(--actualPage);
-            cambiarEstadoDelEditText();
-        } else {
-            Snackbar.make(view, "No puedes retroceder más", Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    public void onClickIrButton(View view) {
-        EditText editText = (EditText) findViewById(R.id.editBuscar);
-        int page = 1;
-        if (editText != null)
-            page = Integer.parseInt(editText.getText().toString());
-
-        if (page > 1 && page < 3) {
-            actualPage = page;
-            cambiarPagina(actualPage);
-        } else {
-            Snackbar.make(view, "No existe esa página.", Snackbar.LENGTH_LONG).show();
-        }
-    }
-
 }
----------------------------------book fragment-----------------
-public class BookFragment extends Fragment {
+-----------------------------fragmento receptor-------------
+public class FragmentoReceptor extends Fragment {
 
-    public static BookFragment getInstance(int page) {
-        BookFragment bookFragment = new BookFragment();
-
-        Bundle params = new Bundle();
-        params.putInt("page", page);
-
-        bookFragment.setArguments(params);
-        return bookFragment;
-    }
+    private TextView textMensaje;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_book, container);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragmento_receptor, container, false);
     }
 
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        this.textMensaje = (TextView) view.findViewById(R.id.text_mensaje);
+    }
+
+    public void actualizarVista(String mensaje) {
+        this.textMensaje.setText(mensaje);
+    }
 }
----------------------------------layout main-------------
+-----------------------------layout main---------------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextuniversity.comunicacion.MainActivity">
+
+    <fragment
+        android:id="@+id/fragmento_emisor"
+        android:name="com.nextuniversity.comunicacion.FragmentoEmisor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        tools:layout="@layout/fragmento_emisor" />
+
+    <fragment
+        android:id="@+id/fragmento_receptor"
+        android:name="com.nextuniversity.comunicacion.FragmentoReceptor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragmento_receptor" />
+
+</LinearLayout>
+--------------------------layout fragmento emisor------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBgFragmentA"
     android:orientation="vertical"
-    tools:context="com.nextuniversity.milibro.MainActivity">
+    android:padding="@dimen/activity_vertical_margin">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/fragmento_emisor"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/fragmento_emisor_xml" />
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:text="@string/btn_atras"
-            android:onClick="onClickAtrasButton"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical">
 
         <EditText
-            android:id="@+id/editBuscar"
-            android:text="1"
-            android:gravity="center"
-            android:inputType="number"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content" />
+            android:id="@+id/edit_mensaje"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_mensaje" />
 
         <Button
-            android:onClick="onClickIrButton"
-            android:text="@string/btn_ir"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:text="@string/btn_adelante"
-            android:onClick="onClickAdelanteButton"
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
+            android:id="@+id/btn_enviar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/enviar" />
 
     </LinearLayout>
 
-    <RelativeLayout
-        android:elevation="6dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <fragment
-            android:id="@+id/libroFragment"
-            android:name="com.nextuniversity.milibro.BookFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout="@layout/fragment_book" />
-
-    </RelativeLayout>
-
 </LinearLayout>
---------------------------------layout fragment--------------------
+--------------------------------layout fragmento receptor----------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="bottom"
-    android:background="@android:color/white"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorBgFragmentB"
+    android:orientation="vertical"
+    android:padding="@dimen/activity_vertical_margin">
 
     <TextView
-        android:id="@+id/textPagina"
-        android:text="Hello World!"
-        android:padding="10dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/fragmento_receptor"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/textNumberoDePagina"
-        android:padding="10dp"
-        android:gravity="end"
-        android:text="@string/text_page_number"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/fragmento_receptor_xml" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/mensaje_recibido" />
+
+    <TextView
+        android:id="@+id/text_mensaje"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/app_name"
+        android:textSize="16sp"
+        android:textStyle="italic" />
 
 </LinearLayout>
