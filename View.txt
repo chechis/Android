@@ -1,4 +1,38 @@
----------------------------layout---------------
+-----------------------------main----------------------
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        final TextInputLayout inputLayout = (TextInputLayout) findViewById(R.id.inputLayout);
+        if (inputLayout.getEditText() != null){
+            inputLayout.getEditText().addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (inputLayout.getEditText().getText().length() > 10){
+                        inputLayout.setError("La cadena no puede ser mayor a 10 caracteres");
+                    }else{
+                        inputLayout.setError(null);
+                    }
+                }
+            });
+        }
+    }
+}
+
+---------------------------------layout main--------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,37 +42,36 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.texto.MainActivity"
+    tools:context="com.nextu.cajasdetexto.MainActivity"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/inputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/edit_buscar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="@string/buscar"
+            android:drawableRight="@drawable/lupa"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <EditText
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/certificacion"
-        android:textAppearance="?android:textAppearanceLarge"
-        android:textStyle="italic"
-        android:textColor="@color/colorAccent"
-        android:typeface="serif"
-        android:shadowColor="#727272"
-        android:shadowRadius="5"
-        android:shadowDx="-5"
-        android:shadowDy="-5"+
-    />
-    <TextView
-        android:id="@+id/texto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/certificacion"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/colorPrimaryDark"
-        android:shadowColor="#727272"
-        android:shadowRadius="5"
-        android:shadowDx="-5"
-        android:shadowDy="-5"
-        android:drawableRight="@drawable/ic_insert_emoticon_24dp"
-        android:drawablePadding="5dp"/>
+        android:inputType="number"
+        android:hint="@string/buscar"
+        android:drawableRight="@drawable/lupa"/>
+
 </LinearLayout>
--------------------------main---------------------
- texto = (TextView) findViewById(R.id.texto);
- texto.setTypeface(Typeface.createFromAsset(getAssets(), "fuentes/FjallaOne.ttf"));
+
+---------------------------------gradle------------------------
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.android.support:design:23.2.1'
+}
