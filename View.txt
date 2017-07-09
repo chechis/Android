@@ -1,37 +1,35 @@
-------------------------------main---------------------------
-public class MainActivity extends AppCompatActivity {
-
-    private CheckBox chbOpcion1, chbOpcion2;
+-----------------------------main-----------------------------
+    private RadioGroup rgOpciones;
+    private TextView txtRadioS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        chbOpcion1 = (CheckBox) findViewById(R.id.chb_opcion1);
-        chbOpcion2 = (CheckBox) findViewById(R.id.chb_opcion2);
+        rgOpciones = (RadioGroup) findViewById(R.id.rg_opciones);
+        txtRadioS = (TextView) findViewById(R.id.txt_radio_s);
 
-        CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
+        rgOpciones.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                switch (buttonView.getId()){
-                    case R.id.chb_opcion1:
-                        if (isChecked) ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion1)+"selecionada");
-                        else ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion1));
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                switch (checkedId){
+                    case R.id.rb_opcion1:
+                        txtRadioS.setText(getResources().getString(R.string.opcion1)+" seleccionado");
                         break;
-                    case R.id.chb_opcion2:
-                        if (isChecked) ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion2)+"selecionada");
-                        else ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion2));
+                    case R.id.rb_opcion2:
+                        txtRadioS.setText(getResources().getString(R.string.opcion2)+" seleccionado");
+                        break;
+                    case R.id.rb_opcion3:
+                        txtRadioS.setText(getResources().getString(R.string.opcion3)+" seleccionado");
                         break;
                 }
             }
-        };
-
-        chbOpcion1.setOnCheckedChangeListener(listener);
-        chbOpcion2.setOnCheckedChangeListener(listener);
+        });
     }
 }
-------------------------layout main-----------------------
+---------------------------------layout main-----------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -41,19 +39,34 @@ public class MainActivity extends AppCompatActivity {
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.checkbox.MainActivity"
+    tools:context="com.nextu.radiobuttons.MainActivity"
     android:orientation="vertical">
 
-    <CheckBox
-        android:id="@+id/chb_opcion1"
+    <RadioGroup
+        android:id="@+id/rg_opciones"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/opcion1"
-        android:checked="true"/>
+        android:orientation="horizontal">
 
-    <CheckBox
-        android:id="@+id/chb_opcion2"
+        <RadioButton
+            android:id="@+id/rb_opcion1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/opcion1"/>
+        <RadioButton
+            android:id="@+id/rb_opcion2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/opcion2"/>
+        <RadioButton
+            android:id="@+id/rb_opcion3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/opcion3"/>
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/txt_radio_s"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/opcion2"/>
+        android:layout_height="wrap_content" />
 </LinearLayout>
