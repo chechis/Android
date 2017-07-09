@@ -1,77 +1,14 @@
------------------------------main----------------------
-public class MainActivity extends AppCompatActivity {
+        texto = (TextView) findViewById(R.id.texto);
+        ImageButton btnImage = (ImageButton) findViewById(R.id.btn_image);
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        final TextInputLayout inputLayout = (TextInputLayout) findViewById(R.id.inputLayout);
-        if (inputLayout.getEditText() != null){
-            inputLayout.getEditText().addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    if (inputLayout.getEditText().getText().length() > 10){
-                        inputLayout.setError("La cadena no puede ser mayor a 10 caracteres");
-                    }else{
-                        inputLayout.setError(null);
-                    }
-                }
-            });
-        }
+        btnImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                texto.setText("Certificación Android - boton imagen");
+            }
+        });
     }
-}
 
----------------------------------layout main--------------------
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.cajasdetexto.MainActivity"
-    android:orientation="vertical">
-
-
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/inputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <EditText
-            android:id="@+id/edit_buscar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="@string/buscar"
-            android:drawableRight="@drawable/lupa"/>
-    </android.support.design.widget.TextInputLayout>
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="@string/buscar"
-        android:drawableRight="@drawable/lupa"/>
-
-</LinearLayout>
-
----------------------------------gradle------------------------
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.2.1'
-    compile 'com.android.support:design:23.2.1'
-}
+    public void mostrarTexto(View view){
+        texto.setText("Certificación Android");
+    }
