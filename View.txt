@@ -1,30 +1,29 @@
---------------------------------main--------------------------
-public class MainActivity extends AppCompatActivity {
+----------------------------------main----------------------------
 
-    private NumberPicker numberPicker;
-    private TextView texto;
+public class MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
 
-        texto = (TextView) findViewById(R.id.texto);
-        numberPicker = (NumberPicker) findViewById(R.id.number_picker);
-        numberPicker.setMinValue(1);
-        numberPicker.setMaxValue(31);
-        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                texto.setText("Valor anterior: "+oldVal+" Valor nuevo: "+newVal);
-            }
-        });
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        TextView texto = (TextView) findViewById(R.id.texto);
+        texto.setText(String.format("%1$02d:%2$02d",hourOfDay,minute));
+    }
+
+    public void onClickTimePicker(View view){
+        TimePickerDialog time = new TimePickerDialog(this,this,12,0,true);
+        time.setTitle("Selecciona una hora");
+        time.show();
     }
 }
 
-------------------------------layout main--------------------------
+---------------------------------------layout main-----------------
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -32,17 +31,19 @@ public class MainActivity extends AppCompatActivity {
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.numberpicker.MainActivity">
+    tools:context="com.nextu.timepicker.MainActivity">
 
-    <NumberPicker
-        android:id="@+id/number_picker"
+
+    <Button
+        android:id="@+id/btn_timepicker"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="TimePicker"
+        android:onClick="onClickTimePicker"/>
+
     <TextView
-        android:layout_margin="10dp"
         android:id="@+id/texto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/number_picker"
-        android:text="@string/number"/>
-</RelativeLayout>
+        android:text="Hello World!" />
+</LinearLayout>
