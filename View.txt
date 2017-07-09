@@ -1,14 +1,65 @@
-        texto = (TextView) findViewById(R.id.texto);
-        ImageButton btnImage = (ImageButton) findViewById(R.id.btn_image);
+--------------------------------main-----------------------------
 
-        btnImage.setOnClickListener(new View.OnClickListener() {
+public class MainActivity extends AppCompatActivity {
+
+    private ToggleButton toggle;
+    private Switch switch1;
+    private LinearLayout contenedor;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        toggle = (ToggleButton) findViewById(R.id.toggle);
+        switch1 = (Switch) findViewById(R.id.switch1);
+        contenedor = (LinearLayout) findViewById(R.id.contenedor);
+
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                texto.setText("Certificación Android - boton imagen");
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                int color = isChecked ? ContextCompat.getColor(getBaseContext(), R.color.color_background) :
+                        ContextCompat.getColor(getBaseContext(), android.R.color.white);
+                contenedor.setBackgroundColor(color);
+            }
+        });
+
+        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) switch1.setText(getResources().getString(R.string.activo));
+                else switch1.setText(getResources().getString(R.string.inactivo));
             }
         });
     }
+}
+-----------------------------layout main------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextu.botonesinterrruptores.MainActivity"
+    android:orientation="vertical"
+    android:id="@+id/contenedor">
 
-    public void mostrarTexto(View view){
-        texto.setText("Certificación Android");
-    }
+    <ToggleButton
+        android:id="@+id/toggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textOn="@string/activo"
+        android:textOff="@string/inactivo"
+        android:checked="true"/>
+
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/switch1"
+        android:checked="true"/>
+
+</LinearLayout>
