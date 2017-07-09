@@ -1,37 +1,30 @@
------------------------------main-----------------------------
-    private RadioGroup rgOpciones;
-    private TextView txtRadioS;
+--------------------------------main--------------------------
+public class MainActivity extends AppCompatActivity {
+
+    private NumberPicker numberPicker;
+    private TextView texto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rgOpciones = (RadioGroup) findViewById(R.id.rg_opciones);
-        txtRadioS = (TextView) findViewById(R.id.txt_radio_s);
-
-        rgOpciones.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        texto = (TextView) findViewById(R.id.texto);
+        numberPicker = (NumberPicker) findViewById(R.id.number_picker);
+        numberPicker.setMinValue(1);
+        numberPicker.setMaxValue(31);
+        numberPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-                switch (checkedId){
-                    case R.id.rb_opcion1:
-                        txtRadioS.setText(getResources().getString(R.string.opcion1)+" seleccionado");
-                        break;
-                    case R.id.rb_opcion2:
-                        txtRadioS.setText(getResources().getString(R.string.opcion2)+" seleccionado");
-                        break;
-                    case R.id.rb_opcion3:
-                        txtRadioS.setText(getResources().getString(R.string.opcion3)+" seleccionado");
-                        break;
-                }
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+                texto.setText("Valor anterior: "+oldVal+" Valor nuevo: "+newVal);
             }
         });
     }
 }
----------------------------------layout main-----------------------
+
+------------------------------layout main--------------------------
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -39,34 +32,17 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.radiobuttons.MainActivity"
-    android:orientation="vertical">
+    tools:context="com.nextu.numberpicker.MainActivity">
 
-    <RadioGroup
-        android:id="@+id/rg_opciones"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <RadioButton
-            android:id="@+id/rb_opcion1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/opcion1"/>
-        <RadioButton
-            android:id="@+id/rb_opcion2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/opcion2"/>
-        <RadioButton
-            android:id="@+id/rb_opcion3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/opcion3"/>
-    </RadioGroup>
-
-    <TextView
-        android:id="@+id/txt_radio_s"
+    <NumberPicker
+        android:id="@+id/number_picker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-</LinearLayout>
+    <TextView
+        android:layout_margin="10dp"
+        android:id="@+id/texto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/number_picker"
+        android:text="@string/number"/>
+</RelativeLayout>
