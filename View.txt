@@ -1,39 +1,37 @@
---------------------------------main-----------------------------
-
+------------------------------main---------------------------
 public class MainActivity extends AppCompatActivity {
 
-    private ToggleButton toggle;
-    private Switch switch1;
-    private LinearLayout contenedor;
+    private CheckBox chbOpcion1, chbOpcion2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toggle = (ToggleButton) findViewById(R.id.toggle);
-        switch1 = (Switch) findViewById(R.id.switch1);
-        contenedor = (LinearLayout) findViewById(R.id.contenedor);
+        chbOpcion1 = (CheckBox) findViewById(R.id.chb_opcion1);
+        chbOpcion2 = (CheckBox) findViewById(R.id.chb_opcion2);
 
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                int color = isChecked ? ContextCompat.getColor(getBaseContext(), R.color.color_background) :
-                        ContextCompat.getColor(getBaseContext(), android.R.color.white);
-                contenedor.setBackgroundColor(color);
+                switch (buttonView.getId()){
+                    case R.id.chb_opcion1:
+                        if (isChecked) ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion1)+"selecionada");
+                        else ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion1));
+                        break;
+                    case R.id.chb_opcion2:
+                        if (isChecked) ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion2)+"selecionada");
+                        else ((CheckBox)buttonView).setText(getResources().getString(R.string.opcion2));
+                        break;
+                }
             }
-        });
+        };
 
-        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) switch1.setText(getResources().getString(R.string.activo));
-                else switch1.setText(getResources().getString(R.string.inactivo));
-            }
-        });
+        chbOpcion1.setOnCheckedChangeListener(listener);
+        chbOpcion2.setOnCheckedChangeListener(listener);
     }
 }
------------------------------layout main------------------
+------------------------layout main-----------------------
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -43,23 +41,19 @@ public class MainActivity extends AppCompatActivity {
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.nextu.botonesinterrruptores.MainActivity"
-    android:orientation="vertical"
-    android:id="@+id/contenedor">
+    tools:context="com.nextu.checkbox.MainActivity"
+    android:orientation="vertical">
 
-    <ToggleButton
-        android:id="@+id/toggle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textOn="@string/activo"
-        android:textOff="@string/inactivo"
-        android:checked="true"/>
-
-    <Switch
-        android:id="@+id/switch1"
+    <CheckBox
+        android:id="@+id/chb_opcion1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/switch1"
+        android:text="@string/opcion1"
         android:checked="true"/>
 
+    <CheckBox
+        android:id="@+id/chb_opcion2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/opcion2"/>
 </LinearLayout>
