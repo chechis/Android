@@ -1,0 +1,237 @@
+-----------------------------main----------------------------------
+public class MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener{
+
+    private static final String STATE_LISTA_HORAS = "lista_horas";
+    private static final String STATE_LISTA_ACTIVOS = "lista_activos";
+
+    private ListView lv_alarmas;
+    private ArrayList<Alarma> alarmas;
+    private AlarmaAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        alarmas = new ArrayList<>();
+        if (savedInstanceState != null){
+            String[] horas = savedInstanceState.getStringArray(STATE_LISTA_HORAS);
+            boolean[] activos = savedInstanceState.getBooleanArray(STATE_LISTA_ACTIVOS);
+            for(int i=0; i<horas.length;i++){
+                alarmas.add(new Alarma(activos[i],horas[i]));
+            }
+        }else {
+            alarmas.add(new Alarma("12:00"));
+        }
+        adapter = new AlarmaAdapter(this,alarmas);
+
+        lv_alarmas = (ListView) findViewById(R.id.lv_alarmas);
+        lv_alarmas.setAdapter(adapter);
+    }
+
+    public void onClickAgregar(View view){
+        TimePickerDialog time = new TimePickerDialog(this,this,12,0,true);
+        time.setTitle("Seleccione hora");
+        time.show();
+    }
+
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        alarmas.add(new Alarma(String.format("%1$02d:%2$02d",hourOfDay,minute)));
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        String[] horas = new String[alarmas.size()];
+        boolean[] activos = new boolean[alarmas.size()];
+
+        for (int i=0; i<alarmas.size();i++){
+            horas[i] = alarmas.get(i).getHora();
+            activos[i] = alarmas.get(i).isActivo();
+        }
+
+        outState.putStringArray(STATE_LISTA_HORAS,horas);
+        outState.putBooleanArray(STATE_LISTA_ACTIVOS,activos);
+    }
+}
+---------------------------alarma adapter------------------------
+public class AlarmaAdapter extends BaseAdapter{
+
+    private ArrayList<Alarma> objects;
+    private Context context;
+
+    public AlarmaAdapter(Context context, ArrayList<Alarma> objects) {
+        this.objects = objects;
+    }
+
+    @Override
+    public int getCount() {
+        return objects.size();
+    }
+
+    @Override
+    public Alarma getItem(int position) {
+        return objects.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+
+        //Cargar el layout diseñado como plantilla para cada item
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View item = convertView;
+        if (convertView == null)
+            item = inflater.inflate(R.layout.alarma_item, null);
+
+        //Referencias de objetos del layout cargado
+        final TextView txtAlarma = (TextView)item.findViewById(R.id.txt_alarma);
+        final Switch swAlarma = (Switch) item.findViewById(R.id.sw_alarma);
+        ImageButton btnEliminar = (ImageButton) item.findViewById(R.id.btn_eliminar);
+
+        //Ajustes para el texto que corresponde a la hora
+        txtAlarma.setText(getItem(position).getHora());
+        if (getItem(position).isActivo())txtAlarma.setTextColor(ContextCompat.getColor(parent.getContext(), R.color.colorAccent));
+        txtAlarma.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog time = new TimePickerDialog(parent.getContext(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        txtAlarma.setText(String.format("%1$02d:%2$02d",hourOfDay,minute));
+                    }
+                }, 12, 0, true);
+                time.setTitle("Selecciona hora");
+                time.show();
+            }
+        });
+
+        //Ajustes para el Switch
+        swAlarma.setChecked(getItem(position).isActivo());
+        swAlarma.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    txtAlarma.setTextColor(ContextCompat.getColor(parent.getContext(), R.color.colorAccent));
+                    getItem(position).setActivo(true);
+                }
+                else {
+                    txtAlarma.setTextColor(ContextCompat.getColor(parent.getContext(), R.color.textColor));
+                    getItem(position).setActivo(false);
+                }
+            }
+        });
+
+        //Manejador de evento para el boton eliminar
+        btnEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                objects.remove(position);
+                notifyDataSetChanged();
+            }
+        });
+        return item;
+    }
+}
+-------------------------------alarma modelo-----------------------
+public class Alarma {
+
+    private String hora;
+    private boolean activo;
+
+    public Alarma(String hora) {
+        this.activo = false;
+        this.hora = hora;
+    }
+
+    public Alarma(boolean activo, String hora) {
+        this.activo = activo;
+        this.hora = hora;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public String getHora() {
+        return hora;
+    }
+
+    public void setHora(String hora) {
+        this.hora = hora;
+    }
+}
+-----------------------------layout main---------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextu.listaalarma.MainActivity"
+    android:orientation="vertical">
+
+    <ListView
+        android:id="@+id/lv_alarmas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+    <Button
+        android:id="@+id/btn_agregar_alarma"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="@string/alarma"
+        android:drawableLeft="@drawable/ic_add_circle_24dp"
+        android:drawablePadding="5dp"
+        android:onClick="onClickAgregar"/>
+</LinearLayout>
+----------------------------------layout alarma_item---------------
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin">
+
+    <TextView
+        android:id="@+id/txt_alarma"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="56sp"
+        android:text="12:00"
+        android:textColor="@color/textColor"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentRight="true">
+        <Switch
+            android:id="@+id/sw_alarma"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"/>
+        <ImageButton
+            android:id="@+id/btn_eliminar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_delete_24dp"
+            style="?borderlessButtonStyle"/>
+    </LinearLayout>
+
+</RelativeLayout>
