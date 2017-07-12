@@ -1,0 +1,104 @@
+--------------------------------------main------------------------
+public class MainActivity extends AppCompatActivity {
+
+    private Switch swtTelefono, swtCorreo;
+    private EditText edtTelefono, edtCorreo, edtNombre;
+    private ArrayList<String> resultados;
+    private ListView lvResultados;
+    private ArrayAdapter<String> adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        swtCorreo = (Switch) findViewById(R.id.swt_correo);
+        swtTelefono = (Switch) findViewById(R.id.swt_telefono);
+        edtCorreo = (EditText) findViewById(R.id.edit_correo);
+        edtTelefono = (EditText) findViewById(R.id.edit_telefono);
+        edtNombre = (EditText) findViewById(R.id.edit_nombre);
+        lvResultados = (ListView) findViewById(R.id.lv_resultado);
+        resultados = new ArrayList<>();
+
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,resultados);
+        lvResultados.setAdapter(adapter);
+
+        swtTelefono.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                edtTelefono.setEnabled(isChecked);
+                edtTelefono.requestFocus();
+            }
+        });
+        swtCorreo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                edtCorreo.setEnabled(isChecked);
+                edtCorreo.requestFocus();
+            }
+        });
+    }
+
+    public void onClickGuardar(View view){
+        String correo = edtCorreo.isEnabled() ? edtCorreo.getText().toString() : "No aplica";
+        String telefono = edtTelefono.isEnabled() ? edtTelefono.getText().toString() : "No aplica";
+        String resultado = "\nNombre: "+edtNombre.getText()+"\nCorreo: "+correo+"\nTeléfono: "+telefono+"\n";
+        resultados.add(resultado);
+        adapter.notifyDataSetChanged();
+    }
+}
+-----------------------layout main----------------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.nextu.formulario.MainActivity"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/edit_nombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/nombre"/>
+    <Switch
+        android:id="@+id/swt_telefono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pregunta_telefono"
+        android:switchPadding="5dp"
+        android:checked="true"/>
+    <EditText
+        android:id="@+id/edit_telefono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/telefono"
+        android:inputType="phone"/>
+    <Switch
+        android:id="@+id/swt_correo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pregunta_correo"
+        android:switchPadding="5dp"/>
+    <EditText
+        android:id="@+id/edit_correo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/correo"
+        android:enabled="false"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/guardar"
+        android:layout_gravity="right"
+        android:onClick="onClickGuardar"/>
+    <ListView
+        android:id="@+id/lv_resultado"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
